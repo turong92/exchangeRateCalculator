@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+	<head>
+		<meta charset="UTF-8">
+		<title>환율 계산</title>
+	</head>
+	
+	<script>
+	function moneyCheck(money) {
+		var money = Number(money);
+		if(money <= 0) {
+			//수취금액을 입력하지 않거나, 0보다 작은 금액이거나
+			return false;
+		}else if(10000 < money) {
+			//10,000 USD보다 큰 금액
+			return false;
+		}else if(isNaN(money)){
+			//숫자가 아닌경우
+			return false;
+		}
+		
+		return true;
+	}
+	
+	function roundToTwo(num) {
+    	return +(Math.round(num + "e+2")  + "e-2");
+	}
+	
+	function addComma(price) {
+		price = roundToTwo(price).toFixed(2);
+		return String(price).replace(/(\d)(?=(?:\d{3})+(?!\d))/g, '$1,');
+	}
+	
+	function calculateOnClick() {
+		var USD = Number(document.getElementById("priceUSD").value);
+		var element = document.getElementById("result_div");
+		if(moneyCheck(USD)) {
+			element.innerText = "수취금액은 " + addComma(getExchangeRate() * USD) + " " + getCountry() + " 입니다.";
+		}else {
+			element.innerText = "";
+			alert("송금액이 바르지 않습니다");
+		}
+	}
+	
+	function selectOnChange() {
+		var element = document.getElementById("exchangeRate_div");
+		
+		var text = "환율: " + addComma(getExchangeRate()) + " " + this.getCountry() + "/USD";
+		element.innerText = text;
+	}
+	
+	function getCountry(){
+		var box = document.getElementById("selectCountry");
+		var country = box.options[box.selectedIndex].text.replace(/[^A-Z]/g, "");
+		
+		return country;
+	}
+	
+	function getExchangeRate() {
+		var box = document.getElementById("selectCountry");
+		var exchangeRate = Number(box.options[box.selectedIndex].value);
+		
+		return exchangeRate;
+	}
+	</script>
+	
+	<body onload="selectOnChange()">
+		<h2>환율 계산</h2>
+		
+		<div>송금국가: 미국(USD)</div>
+		<div>수취국가: 
+		
+		<select id="selectCountry" onchange="selectOnChange()">
+			<option th:value="${KRW}" selected> 한국(KRW) </option>
+			<option th:value="${JPY}"> 일본(JPY) </option>
+			<option th:value="${PHP}"> 필리핀(PHP) </option>
+		</select>
+		</div>
+		
+		<div><div id="exchangeRate_div"></div></div>
+		<div>송금액: <input type="text" id="priceUSD" placeholder="금액을 입력해주세요." value="100">USD</div>
+		<div><button id="calculateButton" onclick="calculateOnClick()">Submit</button></div>
+		</br>
+		<div id="result_div"></div>
+	</body>
+</html>
